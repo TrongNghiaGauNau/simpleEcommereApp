@@ -1,6 +1,11 @@
+import 'package:ecomerce_project/auth/presentation/commons/auth_common_button.dart';
 import 'package:ecomerce_project/auth/presentation/login/login_screen.dart';
 import 'package:ecomerce_project/auth/shared/const.dart';
+import 'package:ecomerce_project/auth/shared/providers.dart';
+import 'package:ecomerce_project/core/application/utils.dart';
+import 'package:ecomerce_project/core/presentation/commons/common_text_form_field.dart';
 import 'package:ecomerce_project/core/presentation/mixins.dart';
+import 'package:ecomerce_project/core/shared/const.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -11,14 +16,23 @@ class RegisterScreen extends HookConsumerWidget with DismissKeyboard {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = GlobalKey<FormState>();
+    final usernameController = useTextEditingController();
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
+    final confirmPasswordController = useTextEditingController();
 
-    formValidate() {
+    signUp() {
+      if (passwordController.text != confirmPasswordController.text) {
+        showSnackbar(context, "Password confirm does not matched");
+        return;
+      }
       if (formKey.currentState!.validate()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Oh yeahhh')),
-        );
+        ref.read(authNotifierProvider.notifier).signUp(
+              userName: usernameController.text,
+              email: emailController.text,
+              password: passwordController.text,
+              context: context,
+            );
       }
     }
 
@@ -51,7 +65,7 @@ class RegisterScreen extends HookConsumerWidget with DismissKeyboard {
                   ),
                   const SizedBox(height: 20),
                   CommonTextFormField(
-                    controller: passwordController,
+                    controller: usernameController,
                     hintText: 'Username',
                   ),
                   const SizedBox(height: 20),
@@ -63,11 +77,13 @@ class RegisterScreen extends HookConsumerWidget with DismissKeyboard {
                   CommonTextFormField(
                     controller: passwordController,
                     hintText: 'Password',
+                    isPassword: true,
                   ),
                   const SizedBox(height: 20),
                   CommonTextFormField(
-                    controller: passwordController,
+                    controller: confirmPasswordController,
                     hintText: 'Confirm password',
+                    isPassword: true,
                   ),
                   const SizedBox(height: 20),
                   Padding(
@@ -88,73 +104,12 @@ class RegisterScreen extends HookConsumerWidget with DismissKeyboard {
                     ),
                   ),
                   const SizedBox(height: 50),
-                  GestureDetector(
-                    onTap: formValidate,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 150),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
-                        gradient: const LinearGradient(
-                            colors: [Colors.orange, Colors.orangeAccent]),
-                        boxShadow: const [BoxShadow(blurRadius: 10)],
-                      ),
-                      child: GestureDetector(
-                        child: const Center(
-                          child: Text(
-                            "Login",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  CommonAuthButton(onTap: signUp, isSignIn: false),
                 ],
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class CommonTextFormField extends StatelessWidget {
-  const CommonTextFormField({
-    super.key,
-    required this.controller,
-    this.hintText = '',
-    this.obscureText = false,
-  });
-  final TextEditingController controller;
-  final String hintText;
-  final bool obscureText;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: TextFormField(
-        obscureText: obscureText,
-        controller: controller,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please dont leave field blank';
-          }
-          return null;
-        },
-        decoration: InputDecoration(
-            hintText: hintText,
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide()),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide()),
-            suffixIcon: const Icon(Icons.remove_red_eye)),
       ),
     );
   }

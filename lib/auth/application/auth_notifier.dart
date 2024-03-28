@@ -1,70 +1,82 @@
-// import 'dart:async';
-// import 'package:auto_route/auto_route.dart';
-// import 'package:dartz/dartz.dart';
-// import 'package:dio/dio.dart';
-// import 'package:freezed_annotation/freezed_annotation.dart';
-// import 'package:gimic_sns_mobile/auth/infrastructure/authenticator.dart';
-// import 'package:gimic_sns_mobile/core/domain/failure.dart';
-// import 'package:gimic_sns_mobile/settings/detail_setting/login_setting/domain/login_setting_model.dart';
-// import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:ecomerce_project/auth/application/authenticator.dart';
+import 'package:ecomerce_project/auth/infrastructure/models/auth_state.dart';
+import 'package:ecomerce_project/auth/presentation/login/login_screen.dart';
+import 'package:ecomerce_project/core/application/utils.dart';
+import 'package:ecomerce_project/core/shared/const.dart';
+import 'package:ecomerce_project/user_profile/infrastructure/models/user.dart';
+import 'package:ecomerce_project/user_profile/infrastructure/user_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:riverpod/riverpod.dart';
 
-// part 'auth_notifier.freezed.dart';
+class AuthNotifer extends StateNotifier<AuthState> {
+  AuthNotifer(this._authenticator, this._userRepsitory)
+      : super(const AuthState.init());
 
-// @freezed
-// class AuthState with _$AuthState {
-//   const AuthState._();
-//   const factory AuthState.init() = _AuthInit;
-//   const factory AuthState.ready() = _AuthReady;
-//   const factory AuthState.space() = _Space;
-//   const factory AuthState.authenticated(PageRouteInfo routeInfo) = _Authenticated;
-//   const factory AuthState.unauthenticated({bool? isLogout}) = _Unauthenticated;
-// }
+  final Authenticator _authenticator;
+  final UserRepsitory _userRepsitory;
 
-// class AuthNotifier extends StateNotifier<AuthState> {
-//   AuthNotifier(this._authenticator) : super(const AuthState.init());
+  void signUp(
+      {required String userName,
+      required String email,
+      required String password,
+      required BuildContext context}) async {
+    state = const AuthState.loading();
+    try {
+      //sign up in authenticator
+      final respond = await _authenticator.signUpWithEmailAndPassword(
+          email: email, password: password);
+      respond.fold((l) {
+        debugPrint(l.messsage);
+        showSnackbar(context, l.messsage);
+      }, (uid) async {
+        //save user data just signed up to firestore
+        final user = User(
+          uid: uid,
+          email: email,
+          userName: userName,
+          profilePic: defaultAvatar,
+        );
+        final res = await _userRepsitory.saveUserData(user, uid);
+        res.fold((l) => showSnackbar(context, l.messsage), (r) {
+          showSnackbar(context, 'Account created sucessfully! Please login');
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ));
+        });
+      });
+      state = const AuthState.init();
+    } catch (e) {
+      state = const AuthState.failure();
+    }
+  }
 
-//   final Authenticator _authenticator;
+  void login(
+      {required String email,
+      required String password,
+      required BuildContext context}) async {
+    state = const AuthState.loading();
+    try {
+      final respond = await _authenticator.logInWithEmailAndPassword(
+          email: email, password: password);
+      respond.fold((l) {
+        showSnackbar(context, l.messsage);
+        state = const AuthState.failure();
+      }, (r) {
+        state = const AuthState.success();
+      });
+    } catch (e) {
+      state = const AuthState.failure();
+      debugPrint(e.toString());
+    }
+  }
 
-//   void updateAuthState(AuthState newState) => state = newState;
-
-//   Future<bool> get hasAccessToken => _authenticator.isSignedIn();
-//   Future<String?> get spaceId => _authenticator.isJoinedSpace();
-
-//   Future<Either<Failure, void>> login(
-//       String username, String password, LoginSettingType setting, CancelToken cancelToken) async {
-//     return await _authenticator.login(username, password, setting, cancelToken);
-//   }
-
-//   Future<Either<Failure, Unit>> logout([bool forceLogout = true]) async {
-//     final isSignedIn = await _authenticator.isSignedIn();
-//     Either<Failure, Unit> failureOrSuccess;
-//     if (isSignedIn) {
-//       failureOrSuccess = await _authenticator.logout();
-//       if (forceLogout) {
-//         await failureOrSuccess.fold(
-//             (l) async => _authenticator.clearAndLogoutFromFirebase(), (r) {});
-//         state = const AuthState.unauthenticated(isLogout: true);
-//       } else {
-//         failureOrSuccess.fold((l) => null, (r) {
-//           state = const AuthState.unauthenticated(isLogout: true);
-//         });
-//       }
-//     } else {
-//       state = const AuthState.unauthenticated(isLogout: true);
-//       failureOrSuccess = left(const Failure.error(null, null));
-//     }
-//     return failureOrSuccess;
-//   }
-
-//   Future<bool> refreshToken([bool useBio = false]) async {
-//     final result = await _authenticator.refreshToken(useBio);
-
-//     return result.maybeWhen(withNewData: (_) => true, orElse: () => false);
-//   }
-
-//   Future<bool> spaceToken() async {
-//     final result = await _authenticator.spaceToken();
-
-//     return result.maybeWhen(withNewData: (_) => true, orElse: () => false);
-//   }
-// }
+  void logout(BuildContext context) async {
+    try {
+      final res = await _authenticator.logOut();
+      res.fold((l) => showSnackbar(context, l.messsage),
+          (r) => state = const AuthState.failure());
+    } catch (e) {
+      debugPrint('Error Logout: $e');
+    }
+  }
+}
