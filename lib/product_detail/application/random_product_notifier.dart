@@ -11,6 +11,7 @@ class RandomProductNotifier extends StateNotifier<Product?> {
 
   Future<Product?> getRandomProduct() async {
     final randomProduct = await _productRepository.getRandomProduct();
+    state = randomProduct;
     return randomProduct;
   }
 }

@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:ecomerce_project/core/infrastructure/interface_params.dart';
 
 class HttpService {
-  HttpService(this._dio);
-  final Dio _dio;
+  HttpService();
+  final _dio = Dio();
 
-  Future<Response<T>> get<T>(IParam param, [CancelToken? cancelToken]) {
+  Future<Response> get(IParam param, [CancelToken? cancelToken]) {
     return _dio.get(
       param.link,
       queryParameters: param.json,

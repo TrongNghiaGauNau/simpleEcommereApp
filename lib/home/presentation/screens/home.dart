@@ -1,4 +1,5 @@
 import 'package:ecomerce_project/home/presentation/widgets/all_categories.dart';
+import 'package:ecomerce_project/home/presentation/widgets/home_search_field.dart';
 import 'package:ecomerce_project/home/presentation/widgets/trending_now.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -15,18 +16,7 @@ class HomeScreen extends HookConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(
             children: [
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search something...',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide()),
-                  focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide()),
-                  prefixIcon: const Icon(Icons.search),
-                ),
-              ),
+              const HomeSearchField(),
               const TrendingNow(),
               const SizedBox(height: 10),
               Align(

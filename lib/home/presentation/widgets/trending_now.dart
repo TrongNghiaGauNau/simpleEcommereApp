@@ -1,5 +1,8 @@
 import 'package:ecomerce_project/core/shared/const.dart';
+import 'package:ecomerce_project/product_detail/infrastructure/models/product.dart';
+import 'package:ecomerce_project/product_detail/shared/providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class TrendingNow extends HookConsumerWidget {
@@ -7,7 +10,6 @@ class TrendingNow extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final randomMeal = ref.watch(randomMealProvider);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -22,7 +24,7 @@ class TrendingNow extends HookConsumerWidget {
         const SizedBox(height: 10),
         SizedBox(
           width: double.infinity,
-          child: SpecialOfferCard(),
+          child: const SpecialOfferCard(),
           // child: randomMeal.when(
           //   data: (meal) {
           //     return SpecialOfferCard(
@@ -42,16 +44,20 @@ class TrendingNow extends HookConsumerWidget {
   }
 }
 
-class SpecialOfferCard extends StatelessWidget {
+class SpecialOfferCard extends HookConsumerWidget {
   const SpecialOfferCard({
     super.key,
-    // required this.meal,
   });
 
-  // final Meals meal;
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final randomProduct = ref.watch(randomProductProvider);
+
+    useEffect(() {
+      Future(() => ref.read(randomProductProvider.notifier).getRandomProduct());
+      return null;
+    }, []);
+
     final size = MediaQuery.of(context).size;
     return GestureDetector(
       onTap: () {
@@ -72,40 +78,49 @@ class SpecialOfferCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Image.network(
-                  defaultAvatar,
-                  fit: BoxFit.fill,
-                ),
+                child: randomProduct == null
+                    ? Center(
+                        child: GestureDetector(
+                            onTap: () => ref
+                                .read(randomProductProvider.notifier)
+                                .getRandomProduct(),
+                            child: const Icon(Icons.replay_outlined)),
+                      )
+                    : Image.network(
+                        randomProduct.image ?? defaultAvatar,
+                        fit: BoxFit.scaleDown,
+                      ),
               ),
             ),
-            Positioned(
-              top: 10,
-              left: 20,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.black38,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text.rich(
-                    TextSpan(
-                      style: const TextStyle(color: Colors.white),
-                      children: [
-                        TextSpan(
-                          text: 'product name',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+            if (randomProduct != null)
+              Positioned(
+                top: 10,
+                left: 20,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.black38,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text.rich(
+                      TextSpan(
+                        style: const TextStyle(color: Colors.white),
+                        children: [
+                          TextSpan(
+                            text: randomProduct.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        TextSpan(text: 'Category')
-                      ],
+                          TextSpan(text: randomProduct.category)
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),

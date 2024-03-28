@@ -11,11 +11,12 @@ class ProductRepository {
 
   Future<Product?> getRandomProduct() async {
     try {
-      final randomProductId = Random().nextInt(19) + 1;
-      final response = await _service
-          .get<Product>(GetProductDetailParam(randomProductId.toString()));
+      final randomProductId = (Random().nextInt(19) + 1).toString();
+      final response =
+          await _service.get(GetProductDetailParam(randomProductId.toString()));
       if (response.statusCode == 200) {
-        final product = response.data;
+        final data = response.data;
+        final product = Product.fromJson(data);
         return product;
       }
       debugPrint(
