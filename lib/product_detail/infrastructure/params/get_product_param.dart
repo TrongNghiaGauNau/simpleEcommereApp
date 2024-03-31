@@ -11,3 +11,24 @@ class GetProductDetailParam extends IParam {
   @override
   String get link => APIPath.getSingleProduct(productId);
 }
+
+class GetCategoriesParam extends IParam {
+  GetCategoriesParam();
+  @override
+  get json => null;
+
+  @override
+  String get link => APIPath.categories;
+}
+
+class GetAllProductsBaseOnCategoryParam extends IParam {
+  GetAllProductsBaseOnCategoryParam({this.category});
+  final String? category;
+  @override
+  get json => null;
+
+  @override
+  String get link => category == null
+      ? APIPath.products
+      : APIPath.getProductsBaseOnCategories(category!);
+}

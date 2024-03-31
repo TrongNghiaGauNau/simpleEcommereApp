@@ -10,7 +10,7 @@ class APIPath {
 
   static const categories = '$baseURL/products/categories';
 
-  static productsBaseOnCategories(String category) {
+  static getProductsBaseOnCategories(String category) {
     return '$baseURL/products/category/$category';
   }
 }

@@ -1,75 +1,72 @@
+import 'package:ecomerce_project/core/presentation/commons/loading.shimmer.dart';
+import 'package:ecomerce_project/core/presentation/constants/color.dart';
+import 'package:ecomerce_project/home/shared/providers.dart';
+import 'package:ecomerce_project/product_detail/shared/providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class AllCategories extends StatelessWidget {
-  const AllCategories({
-    super.key,
-    // required this.allCategories,
-    // required this.categoryClicked,
-    // required this.categoryName,
-  });
-
-  // final AsyncValue<List<String>> allCategories;
-  // final ValueNotifier<int> categoryClicked;
-  // final ValueNotifier<String> categoryName;
+class AllCategories extends HookConsumerWidget {
+  const AllCategories({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Widget> a = [
-      Text('product 1'),
-      Text('product 2'),
-      Text('product 3'),
-      Text('product 4'),
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    List<String> allCategories = ['All'];
+    final categories = ref.watch(categoriesProvider);
+    final loadingList = List.generate(
+        5,
+        (index) => const LoadingShimmer(
+              width: 70,
+              height: 30,
+            ));
 
+    useEffect(() {
+      Future(() => ref.read(categoriesProvider.notifier).getCategories());
+      return null;
+    }, []);
+
+    if (categories.isLoading) {
+      return Wrap(children: loadingList);
+    }
+
+    if (categories.listCategories != null) {
+      allCategories = [...allCategories, ...categories.listCategories!];
+    }
     return SizedBox(
-      height: 40,
+      width: double.infinity,
       child: Wrap(
-        children: a,
+        spacing: 5,
+        runSpacing: 5,
+        alignment: WrapAlignment.start,
+        children: allCategories.map((e) => CategoryTile(text: e)).toList(),
       ),
-      // child: allCategories.when(
-      //   data: (categories) {
-      //     return ListView.builder(
-      //       scrollDirection: Axis.horizontal,
-      //       itemCount: categories.length,
-      //       itemBuilder: (context, index) {
-      //         return GestureDetector(
-      //           onTap: () {
-      //             categoryClicked.value = index;
-      //             categoryName.value = categories[index];
-      //             // ref.read(getAllCategoryMeals(categoryName.value));
-      //           },
-      //           child: Container(
-      //             margin: const EdgeInsets.symmetric(horizontal: 5),
-      //             decoration: BoxDecoration(
-      //               borderRadius: BorderRadius.circular(10),
-      //               color: categoryClicked.value == index
-      //                   ? Colors.red
-      //                   : Colors.transparent,
-      //             ),
-      //             child: Center(
-      //               child: Padding(
-      //                 padding: const EdgeInsets.all(8),
-      //                 child: Text(
-      //                   categories[index],
-      //                   style: TextStyle(
-      //                       color: categoryClicked.value == index
-      //                           ? Colors.white
-      //                           : Colors.redAccent,
-      //                       fontSize: 16,
-      //                       fontWeight: FontWeight.bold),
-      //                 ),
-      //               ),
-      //             ),
-      //           ),
-      //         );
-      //       },
-      //     );
-      //   },
-      //   error: (error, stackTrace) => const Center(
-      //     child: Text('Can not load categories'),
-      //   ),
-      //   loading: () => const CircularProgressIndicator(),
-      // ),
+    );
+  }
+}
+
+class CategoryTile extends ConsumerWidget {
+  const CategoryTile({super.key, required this.text});
+
+  final String text;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categoryTab = ref.watch(categoryTabProvider);
+
+    return GestureDetector(
+      onTap: () {
+        ref.read(categoryTabProvider.notifier).state = text;
+        ref.read(listProductsProvider.notifier).getAllProductsBaseOnCategory(
+            category: text == 'All' ? null : text);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: categoryTab == text ? colorPrimmary : Colors.black12,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(),
+        ),
+        child: Text(text),
+      ),
     );
   }
 }

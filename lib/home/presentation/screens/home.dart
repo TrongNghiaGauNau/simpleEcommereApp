@@ -1,5 +1,7 @@
 import 'package:ecomerce_project/home/presentation/widgets/all_categories.dart';
+import 'package:ecomerce_project/home/presentation/widgets/all_products_base_on_category.dart';
 import 'package:ecomerce_project/home/presentation/widgets/home_search_field.dart';
+import 'package:ecomerce_project/home/presentation/widgets/home_title_large.dart';
 import 'package:ecomerce_project/home/presentation/widgets/trending_now.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,27 +11,21 @@ class HomeScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SizedBox(
+    return const SizedBox(
       width: double.infinity,
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: EdgeInsets.symmetric(horizontal: 10),
           child: Column(
             children: [
-              const HomeSearchField(),
-              const TrendingNow(),
-              const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text('All Products',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        )),
-              ),
+              HomeSearchField(),
+              TrendingNow(),
+              SizedBox(height: 10),
+              HomeTitleLarge(text: 'All Products'),
+              SizedBox(height: 5),
               AllCategories(),
-              // AllProductsBaseOnCategory(
-              //   listMeals: listMeals,
-              // )
+              SizedBox(height: 10),
+              AllProductsBaseOnCategory()
             ],
           ),
         ),

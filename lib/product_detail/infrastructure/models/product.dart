@@ -7,12 +7,12 @@ part 'product.g.dart';
 @freezed
 class Product with _$Product {
   const factory Product({
-    int? id,
-    String? title,
-    double? price,
-    String? description,
-    String? category,
-    String? image,
+    required int id,
+    required String title,
+    required double price,
+    required String description,
+    required String category,
+    required String image,
     Rating? rating,
   }) = _Product;
 

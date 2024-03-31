@@ -1,4 +1,6 @@
+import 'package:ecomerce_project/core/presentation/constants/color.dart';
 import 'package:ecomerce_project/core/presentation/constants/ui_constants.dart';
+import 'package:ecomerce_project/product_detail/shared/providers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -12,6 +14,9 @@ class MainView extends HookConsumerWidget {
     final page = useState(0);
 
     void onPageChange(int index) {
+      if (index == 0) {
+        ref.read(randomProductProvider.notifier).getRandomProduct();
+      }
       page.value = index;
     }
 
@@ -25,11 +30,11 @@ class MainView extends HookConsumerWidget {
       bottomNavigationBar: CupertinoTabBar(
         currentIndex: page.value,
         onTap: onPageChange,
-        activeColor: Colors.deepOrange,
+        activeColor: colorPrimmary,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home)),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications)),
-          BottomNavigationBarItem(icon: Icon(Icons.search)),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_bag)),
+          BottomNavigationBarItem(icon: Icon(Icons.local_shipping)),
           BottomNavigationBarItem(icon: Icon(Icons.person)),
         ],
       ),
